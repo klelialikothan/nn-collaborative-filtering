@@ -1,29 +1,32 @@
 import pandas as pd
 import numpy as np
 from sklearn.preprocessing import StandardScaler
-from sklearn.model_selection import train_test_split, KFold
+from sklearn.model_selection import KFold
 
 # Basic variables
 N: int = 943
 M: int = 1682
-file = 'u.data'
 col_names = ['user id', 'movie id', 'rating', 'timestamp']
 
 # Import file to dataframe
-df = pd.read_table(file, names=col_names, usecols=col_names[0:3], dtype=np.int32)
+df = pd.read_table('u.data', names=col_names, usecols=col_names[0:3], dtype=np.int32)
 user_ratings = np.zeros([N, M])
 
 # Process ratings and save to file
+user_ratings = np.zeros([N, M])
 for i in range(0, N):   # foreach user in dataset
-    # foreach rating of a unique user, centre and regularise data
+    # foreach rating of a unique user, centre and normalise data
     u = df.loc[df['user id'] == (i+1)]
     temp = np.array([k for j, k in zip(u['movie id'], u['rating'])])
     temp = temp.reshape(-1, 1)
-    temp = StandardScaler().fit_transform(X=temp)
-    # store (existing) ratings in array row, filling empty cells with 0
+    temp = StandardScaler(with_std=False).fit_transform(X=temp)
+    temp = temp.reshape(len(temp))
+    min_r = temp.min()
+    max_r = temp.max()
     x = 0
     for j, k in zip(u['movie id'], u['rating']):
-        user_ratings[i, (j - 1)] = temp[x]
+        # store (existing) ratings in array row, filling empty cells with 0
+        user_ratings[i, (j - 1)] = np.interp(temp[x], [min_r, max_r], [0, 1])
         x += 1
 np.save('user_ratings.npy', user_ratings)
 df.drop(columns=col_names[0:3])
@@ -34,17 +37,13 @@ for i in range(0, N):   # foreach user in dataset
     user_ids[i, i] = 1  # add one-hot encoded entry to input data array
 np.save('user_ids.npy', user_ids)
 
-# Split dataset into train, validation and test sets and save results to file
-X_train, X_test, y_train, y_test = train_test_split(user_ids, user_ratings, test_size=0.3)
-X_train, X_val, y_train, y_val = train_test_split(X_train, y_train, test_size=0.14)
-np.savez('X_y_data.npz', X_train=X_train, y_train=y_train, X_test=X_test, y_test=y_test)
-
 # Split train data into 5 folds and save results to file
 train_ind = []
 test_ind = []
-kfold = KFold(n_splits=5)
-folds = kfold.split(X_train, y_train)
+kfold = KFold(n_splits=5, shuffle=True)
+folds = kfold.split(user_ids, user_ratings)
 for j, (train, test) in enumerate(folds):
     train_ind.append(train)
     test_ind.append(test)
-np.savez('folds.npz', train_ind=train_ind, test_ind=test_ind)
+np.save('train_ind.npy', train_ind)
+np.save('test_ind.npy', test_ind)
