@@ -9,8 +9,8 @@ M: int = 1682
 col_names = ['user id', 'movie id', 'rating', 'timestamp']
 
 # Import file to dataframe
+print('Importing and processing data.')
 df = pd.read_table('u.data', names=col_names, usecols=col_names[0:3], dtype=np.int32)
-user_ratings = np.zeros([N, M])
 
 # Process ratings and save to file
 user_ratings = np.zeros([N, M])
@@ -32,9 +32,8 @@ np.save('user_ratings.npy', user_ratings)
 df.drop(columns=col_names[0:3])
 
 # Process user ids
-user_ids = np.zeros([N, N], dtype=np.int32)
-for i in range(0, N):   # foreach user in dataset
-    user_ids[i, i] = 1  # add one-hot encoded entry to input data array
+# one-hot encoded set of ids equals NxN identity matrix
+user_ids = np.identity(N, dtype=np.int32)
 np.save('user_ids.npy', user_ids)
 
 # Split train data into 5 folds and save results to file
@@ -47,3 +46,4 @@ for j, (train, test) in enumerate(folds):
     test_ind.append(test)
 np.save('train_ind.npy', train_ind)
 np.save('test_ind.npy', test_ind)
+print('Done.')

@@ -7,7 +7,6 @@ from tensorflow.keras.activations import relu
 from tensorflow.keras.optimizers import SGD
 from tensorflow.keras import callbacks
 from tensorflow.keras import backend as K
-# from tensorflow.keras.utils import plot_model
 import matplotlib.pyplot as plt
 
 # Basic variables
@@ -20,17 +19,17 @@ user_ids = np.load('user_ids.npy')
 train_ind = np.load('train_ind.npy', allow_pickle=True)
 test_ind = np.load('test_ind.npy', allow_pickle=True)
 
-h1 = [20, 15, 15]
-h2 = [15, 15, 10]
-h3 = [15, 10, 5]
+h1 = [20, 15, 15, 15]
+h2 = [20, 15, 15, 10]
+h3 = [20, 15, 10, 5]
 lr = 0.1
 m = 0.6
-print("hello")  # TODO remove
 exp_metrics = np.zeros([len(h1), 5])
 i = 0
 for H1, H2, H3 in zip(h1, h2, h3):
     RMSEs = []
     MAEs = []
+    print(f'Training model with H1={H1}, H2={H2}, H3={H3} ...')
     for j in range(0, 5):
         # Model
         model = Sequential()
@@ -38,19 +37,19 @@ for H1, H2, H3 in zip(h1, h2, h3):
         model.add(Dense(N, kernel_initializer=initializers.Ones(),
                         bias_initializer=initializers.Zeros(), input_dim=N))
         # Leaky ReLU activation function
-        LRelU = lambda x: relu(x, alpha=0.01)
+        def lrelu(x): return relu(x, alpha=0.01)
         # Hidden layer 1
         model.add(Dense(H1, kernel_initializer=initializers.glorot_uniform(),
-                        bias_initializer=initializers.glorot_uniform(), activation=LRelU))
-        model.add(Dropout(0.4))
+                        bias_initializer=initializers.glorot_uniform(), activation=lrelu))
+        model.add(Dropout(0.2))
         # Hidden layer 2
         model.add(Dense(H2, kernel_initializer=initializers.glorot_uniform(),
-                        bias_initializer=initializers.glorot_uniform(), activation=LRelU))
+                        bias_initializer=initializers.glorot_uniform(), activation=lrelu))
         model.add(Dropout(0.3))
         # Hidden layer 3
         model.add(Dense(H3, kernel_initializer=initializers.glorot_uniform(),
-                        bias_initializer=initializers.glorot_uniform(), activation=LRelU))
-        model.add(Dropout(0.2))
+                        bias_initializer=initializers.glorot_uniform(), activation=lrelu))
+        model.add(Dropout(0.4))
         # Output layer
         model.add(Dense(M, kernel_initializer=initializers.glorot_uniform(),
                         bias_initializer=initializers.glorot_uniform(), activation='sigmoid'))
@@ -88,9 +87,8 @@ for H1, H2, H3 in zip(h1, h2, h3):
         plt.legend(['RMSE', 'MAE', 'MSE'], loc='upper right')
         plt.show()
         # Save to file in png format (report)
-        fig.savefig(fname=f'./a5_plots/a3_set_{i + 1}_cv_{j + 1}')
+        # fig.savefig(fname=f'./a5_plots/a5_set_{i + 1}_cv_{j + 1}')
 
-        # plot_model(model, to_file=f'model{i + 1}.png')
         # Clear session, else may observe impacts of model resets (required by k-fold) on performance
         K.clear_session()
     # Store results of cycle in dataframe
@@ -102,7 +100,7 @@ for H1, H2, H3 in zip(h1, h2, h3):
     i += 1
 
 # Print results
-print(exp_metrics)  # TODO remove
+print('Training done.\n')
 table_cols = ['H1', 'H2', 'H3', 'RMSE', 'MAE']
 df = pd.DataFrame(data=exp_metrics, columns=table_cols)
 df = df.astype({'H1': np.int32, 'H2': np.int32, 'H3': np.int32})

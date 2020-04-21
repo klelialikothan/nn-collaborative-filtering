@@ -27,6 +27,7 @@ i = 0
 for lr, m in zip(learning_rate, momentum):
     RMSEs = []
     MAEs = []
+    print(f'Training model with η={lr} and m={m} ...')
     for j in range(0, 5):
         # Model
         model = Sequential()
@@ -35,10 +36,10 @@ for lr, m in zip(learning_rate, momentum):
         model.add(Dense(N, kernel_initializer=initializers.Ones(),
                         bias_initializer=initializers.Zeros(), input_dim=N))
         # Leaky ReLU activation function
-        LRelU = lambda x: relu(x, alpha=0.01)
+        def lrelu(x): return relu(x, alpha=0.01)
         # Hidden layer
         model.add(Dense(H, kernel_initializer=initializers.glorot_uniform(),
-                        bias_initializer=initializers.glorot_uniform(), activation=LRelU))
+                        bias_initializer=initializers.glorot_uniform(), activation=lrelu))
         # Output layer
         model.add(Dense(M, kernel_initializer=initializers.glorot_uniform(),
                         bias_initializer=initializers.glorot_uniform(), activation='sigmoid'))
@@ -76,7 +77,7 @@ for lr, m in zip(learning_rate, momentum):
         plt.legend(['RMSE', 'MAE', 'MSE'], loc='upper right')
         plt.show()
         # Save to file in png format (report)
-        fig.savefig(fname=f'./a3_plots/a3_set_{i + 1}_cv_{j + 1}')
+        # fig.savefig(fname=f'./a3_plots/a3_set_{i + 1}_cv_{j + 1}')
 
         # Clear session, else may observe impacts of model resets (required by k-fold) on performance
         K.clear_session()
@@ -88,6 +89,7 @@ for lr, m in zip(learning_rate, momentum):
     i += 1
 
 # Print results
+print('Training done.\n')
 table_cols = ['η', 'm', 'RMSE', 'MAE']
 df = pd.DataFrame(data=exp_metrics, columns=table_cols)
 print(df.to_string(index=False, formatters=({'RMSE': '{:,.5f}'.format, 'MAE': '{:,.5f}'.format})))
