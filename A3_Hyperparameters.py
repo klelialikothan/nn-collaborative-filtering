@@ -27,7 +27,6 @@ i = 0
 for lr, m in zip(learning_rate, momentum):
     RMSEs = []
     MAEs = []
-    print(f'Training model with η={lr} and m={m} ...')
     for j in range(0, 5):
         # Model
         model = Sequential()
@@ -54,6 +53,9 @@ for lr, m in zip(learning_rate, momentum):
 
         # Termination Criterion
         term = callbacks.EarlyStopping(monitor='loss', min_delta=0.0001, patience=50)
+
+        if j == 0:  # prints after initial tensorflow info messages
+            print(f'\nTraining model with η={lr} and m={m} ...')
 
         # Training
         history = model.fit(user_ids[train_ind[j]], user_ratings[train_ind[j]],
@@ -89,7 +91,7 @@ for lr, m in zip(learning_rate, momentum):
     i += 1
 
 # Print results
-print('Training done.\n')
+print('\nTraining done.\n')
 table_cols = ['η', 'm', 'RMSE', 'MAE']
 df = pd.DataFrame(data=exp_metrics, columns=table_cols)
 print(df.to_string(index=False, formatters=({'RMSE': '{:,.5f}'.format, 'MAE': '{:,.5f}'.format})))

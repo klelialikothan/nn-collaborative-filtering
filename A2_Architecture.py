@@ -26,7 +26,6 @@ i = 0
 for H in h:
     RMSEs = []
     MAEs = []
-    print(f'Training model with H={H} ...')
     for j in range(0, 5):
         # Model
         model = Sequential()
@@ -52,6 +51,9 @@ for H in h:
 
         # Termination Criterion
         term = callbacks.EarlyStopping(monitor='loss', min_delta=0.0001, patience=50)
+
+        if j == 0:  # prints after initial tensorflow info messages
+            print(f'\nTraining model with H={H} ...')
 
         # Training
         history = model.fit(user_ids[train_ind[j]], user_ratings[train_ind[j]],
@@ -86,7 +88,7 @@ for H in h:
     i += 1
 
 # Print results
-print('Training done.\n')
+print('\nTraining done.\n')
 table_cols = ['Hidden Layer Neurons (H)', 'RMSE', 'MAE']
 df = pd.DataFrame(data=exp_metrics, columns=table_cols)
 df = df.astype({'Hidden Layer Neurons (H)': np.int32})

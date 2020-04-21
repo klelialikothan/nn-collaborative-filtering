@@ -29,7 +29,6 @@ i = 0
 for H1, H2, H3 in zip(h1, h2, h3):
     RMSEs = []
     MAEs = []
-    print(f'Training model with H1={H1}, H2={H2}, H3={H3} ...')
     for j in range(0, 5):
         # Model
         model = Sequential()
@@ -64,6 +63,9 @@ for H1, H2, H3 in zip(h1, h2, h3):
 
         # Termination Criterion
         term = callbacks.EarlyStopping(monitor='loss', min_delta=0.0001, patience=20)
+
+        if j == 0:  # prints after initial tensorflow info messages
+            print(f'\nTraining model with H1={H1}, H2={H2}, H3={H3} ...')
 
         # Training
         history = model.fit(user_ids[train_ind[j]], user_ratings[train_ind[j]],
@@ -100,7 +102,7 @@ for H1, H2, H3 in zip(h1, h2, h3):
     i += 1
 
 # Print results
-print('Training done.\n')
+print('\nTraining done.\n')
 table_cols = ['H1', 'H2', 'H3', 'RMSE', 'MAE']
 df = pd.DataFrame(data=exp_metrics, columns=table_cols)
 df = df.astype({'H1': np.int32, 'H2': np.int32, 'H3': np.int32})
